@@ -69,7 +69,8 @@ namespace probnyKol.Controllers
                 using(SqlCommand com = new SqlCommand())
             {
                 com.Connection = con;
-                com.CommandText = $"select * from Animal where Animal.IdAnimal={id}";
+                com.CommandText = $"select * from Animal where Animal.IdAnimal=@id";
+                com.Parameters.AddWithValue("id", id);
 
                 con.Open();
                 var dr = com.ExecuteReader();
@@ -77,7 +78,7 @@ namespace probnyKol.Controllers
                 dr.Read();
                 string typ = (string)dr["Type"];
 
-                return Ok(typ);
+                return Ok(typ + " <-- zwracam typ od id = "+id);
             }
         }
 
