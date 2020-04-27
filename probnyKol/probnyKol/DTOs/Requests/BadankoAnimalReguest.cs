@@ -8,17 +8,22 @@ namespace probnyKol.DTOs.Requests
 {
     public class BadankoAnimalReguest
     {
+        [Required]
         public int IdAnimal { get; set; }
 
         [Required(ErrorMessage ="Musisz podac imie")]
         [MaxLength(100)]
         public string Name { get; set; }
-        public string Type { get; set; }
-        public DateTime AdmissionDate { get; set; }
-        public int IdOwner { get; set; }
 
         [Required]
+        public int IdOwner { get; set; }
+
+        [Required] //to jest blad 400 
         public string NazwaBadanko { get; set; }
+
+      
+
+
 
     }
 }

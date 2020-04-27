@@ -1,8 +1,10 @@
-﻿using probnyKol.DTOs.Requests;
+﻿using Microsoft.AspNetCore.Mvc;
+using probnyKol.DTOs.Requests;
 using probnyKol.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,35 +15,53 @@ namespace probnyKol.Services
         public void BadankoAnimal(BadankoAnimalReguest request)
         {
             //throw new NotImplementedException();
+
             var an = new Animal();
             an.IdAnimal = request.IdAnimal;
-            //...
+            an.Name = request.Name;
+            an.IdOwner = request.IdOwner;
+            an.NazwaBadanko = request.NazwaBadanko;
+           
+
             //...
 
-            using (var con = new SqlConnection(""))
-            using (var com = new SqlCommand())
+            String connectionS = "Data Source=db-mssql;Initial Catalog=s19562;Integrated Security=True";
+
+            using (SqlConnection con = new SqlConnection(connectionS))
+            using (SqlCommand com = new SqlCommand())
             {
                 com.Connection = con;
 
                 con.Open();
-                var tran = con.BeginTransaction();
+                SqlTransaction tran = con.BeginTransaction();
+                
 
                 try
                 {
-                    //1. Czy studia istnieja ? 
-                    com.CommandText = "select IdStudies from studies where name=@name";
-                    com.Parameters.AddWithValue("name", request.Name);
+                    //1. Czy badanko istnieja ? 
 
-                    var dr = com.ExecuteReader();
-                    if (!dr.Read())
+                    com.CommandText = $"select IdProcedure from Procesja where Name=@Name";
+                    com.Parameters.AddWithValue("Name", request.NazwaBadanko);
+                    com.Transaction = tran;
+
+                    using (var dr = com.ExecuteReader())
                     {
-                        tran.Rollback();
-                        //return BadRequest("Studia nie istnieja");
-                        //...
+                        //dr.Read();
+
+                        if (!dr.Read())
+                        {
+                            dr.Close();
+                            tran.Rollback();
+                            //return "Failed";
+                            //...
+                        }
+                        else if (dr.Read())
+                        {
+                            int idbadanko = (int)dr["IdProcedure"];
+                        }
                     }
 
-                    int idstudies = (int)dr["idAnimal"];
-
+                    /*
                     //x. Dodanie studenta 
                     com.CommandText = "INSERT INTO Student(IndexNumber, FirstName) VALUES(@Index , @Fname)";
                     com.Parameters.AddWithValue("Index", request.IdAnimal);
@@ -49,15 +69,22 @@ namespace probnyKol.Services
                     //...
 
                     com.ExecuteNonQuery();
+                    */
 
+                    //con.Close();
                     tran.Commit();
+                   
                 }
                 catch (SqlException exc)
                 {
-                    tran.Rollback();
+                    throw exc;
+                    //tran.Rollback();
                 }
             }
         }
+
+
+
 
         public void PromoteStudents(int semester, string studies)
         {
